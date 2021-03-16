@@ -8,8 +8,12 @@ public class GameManager : MonoBehaviour
     public Canvas canvas;
     public Camera previewCamera;
 
+    public bool IsCanvasActive { set => canvas.enabled = value; }
+    public enum PreviewType { Up, Down, Face, Left };
+
     private int currentPlaneIndex = 0;
-    private GameObject currentPlane;
+    public GameObject currentPlane;
+    public GameObject spaceship;
     private GameObject currentPlanePartToFollow;
 
     private Vector3 movePlanePosition = new Vector3(20f, 0f, 0f);
@@ -17,7 +21,7 @@ public class GameManager : MonoBehaviour
     private float transitionSpeed = 20f;
 
     private bool inPlaneTransition;
-    private bool isCanvasActive;
+    private PreviewType previewType = PreviewType.Up;
 
     private Touch touch;
     private Quaternion touchRotation;
@@ -25,11 +29,11 @@ public class GameManager : MonoBehaviour
 
     private Vector3 previewCameraDefaultPosition = new Vector3(0f, 12f, 0f);
     private Vector3 previewCameraDefaultRotation = new Vector3(90, 0, 0);
-    private string previewType = "Up";
 
     void Start()
     {
         startPosition = planePrefabs[0].transform.position;
+        spaceship = planePrefabs[1];
 
         CreatePlane(currentPlaneIndex, startPosition);
         currentPlanePartToFollow = currentPlane;
@@ -37,15 +41,6 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (isCanvasActive)
-        {
-            canvas.enabled = true;
-        }
-        else
-        {
-            canvas.enabled = false;
-        }
-
         ChangePlane();
         RenderSettings.skybox.SetFloat("_Rotation", 1f * Time.time);
 
@@ -66,11 +61,11 @@ public class GameManager : MonoBehaviour
 
         currentPlane = Instantiate(planePrefabs[currentPlaneIndex], planePosition, planePrefabs[currentPlaneIndex].transform.rotation);
 
-        if(previewType == "Up" || previewType == "Down")
+        if(previewType == PreviewType.Up || previewType == PreviewType.Down)
         {
             currentPlanePartToFollow = currentPlane;
         }
-        else if (previewType == "Face")
+        else if (previewType == PreviewType.Face)
         {
             currentPlanePartToFollow = currentPlane.transform.GetChild(0).gameObject;
         }
@@ -99,7 +94,7 @@ public class GameManager : MonoBehaviour
                 new Vector3(0f, 0f, planePrefabs[currentPlaneIndex].transform.position.z), transitionSpeed * Time.deltaTime);
             if (Vector3.Distance(currentPlane.transform.position, new Vector3(0f, 0f, planePrefabs[currentPlaneIndex].transform.position.z)) < 0.1f)
             {
-                isCanvasActive = true;
+                IsCanvasActive = true;
             }
         }
     }
@@ -134,7 +129,7 @@ public class GameManager : MonoBehaviour
         movePlanePosition = new Vector3(20f, 0f, 0f);
         startPosition = -movePlanePosition;
 
-        isCanvasActive = false;
+        IsCanvasActive = false;
         inPlaneTransition = true;
     }
 
@@ -144,7 +139,7 @@ public class GameManager : MonoBehaviour
         movePlanePosition = new Vector3(-20f, 0f, 0f);
         startPosition = -movePlanePosition;
 
-        isCanvasActive = false;
+        IsCanvasActive = false;
         inPlaneTransition = true;
     }
 
@@ -167,7 +162,7 @@ public class GameManager : MonoBehaviour
     // Change preview buttons
     public void ChangePreviewToUp()
     {
-        previewType = "Up";
+        previewType = PreviewType.Up;
         currentPlanePartToFollow = currentPlane;
         previewCameraDefaultPosition = new Vector3(0f, 12f, 0f);
         previewCameraDefaultRotation = new Vector3(90, 0, 0);
@@ -175,7 +170,7 @@ public class GameManager : MonoBehaviour
 
     public void ChangePreviewToDown()
     {
-        previewType = "Down";
+        previewType = PreviewType.Down;
         currentPlanePartToFollow = currentPlane;
         previewCameraDefaultPosition = new Vector3(0f, -12f, 0f);
         previewCameraDefaultRotation = new Vector3(270, 180, 0);
@@ -183,7 +178,7 @@ public class GameManager : MonoBehaviour
 
     public void ChangePreviewToFace()
     {
-        previewType = "Face";
+        previewType = PreviewType.Face;
         currentPlanePartToFollow = currentPlane.transform.GetChild(0).gameObject;
         previewCameraDefaultPosition = new Vector3(0f, 0f, 0f);
         previewCameraDefaultRotation = new Vector3(180, 0, 0);
@@ -192,7 +187,7 @@ public class GameManager : MonoBehaviour
 
     public void ChangePreviewToLeft()
     {
-        previewType = "Left";
+        previewType = PreviewType.Left;
         currentPlanePartToFollow = currentPlane.transform.GetChild(1).gameObject;
         previewCameraDefaultPosition = new Vector3(0f, 0f, 0f);
         previewCameraDefaultRotation = new Vector3(0, 90, 0);
